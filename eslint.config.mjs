@@ -20,11 +20,28 @@ export default defineConfig([
       'prettier/prettier': 'warn',
 
       // 팀 기준 규칙
-      'no-console': 'warn',
+      'no-console': [
+        'warn',
+        {
+          allow: ['warn', 'error'],
+        },
+      ],
       'prefer-const': 'error',
 
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'axios',
+              message: 'axios 직접 import 금지. axiosInstance를 사용하세요.',
+            },
+          ],
+        },
+      ],
     },
   },
 
