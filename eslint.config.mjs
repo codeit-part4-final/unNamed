@@ -1,13 +1,10 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
-import prettier from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
 
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  prettier,
 
   {
     rules: {
@@ -22,6 +19,8 @@ export default defineConfig([
           ],
         },
       ],
+      'prefer-const': 'error',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
 
@@ -29,19 +28,6 @@ export default defineConfig([
     files: ['src/shared/apis/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': 'off',
-    },
-  },
-
-  {
-    plugins: {
-      prettier: prettierPlugin,
-    },
-    rules: {
-      'prettier/prettier': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'prefer-const': 'error',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
 
