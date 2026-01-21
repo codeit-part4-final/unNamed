@@ -4,5 +4,3 @@ import { setupInterceptors } from './interceptors';
 setupInterceptors(axiosInstance);
 
 export { axiosInstance };
-
-sdfdjsiof;
