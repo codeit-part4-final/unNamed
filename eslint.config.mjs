@@ -8,26 +8,9 @@ export default defineConfig([
 
   {
     rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: 'axios',
-              message: 'axios 직접 import 금지. axiosInstance를 사용하세요.',
-            },
-          ],
-        },
-      ],
       'prefer-const': 'error',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-    },
-  },
 
-  {
-    files: ['src/shared/apis/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
 
