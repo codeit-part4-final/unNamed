@@ -3,9 +3,10 @@
 /**
  * ProfileImage Component
  *
+ *
  * Props 요약
  * @param src             표시할 이미지 URL (없으면 fallback)
- * @param variant         'profile' | 'team' (기본 fallback 분기 / (선택) teamMask 배경)
+ * @param variant         'profile' | 'team' (마스크 배경색/기본 fallback 분기)
  * @param size            'xl' | 'lg' | 'md' | 'sm' | 'xs' (기본 스펙 프리셋)
  * @param responsiveSize  브레이크포인트별 size 오버라이드 (선택)
  * @param responsiveSpec  브레이크포인트별 box/image px 직접 지정 (선택)
@@ -22,18 +23,19 @@
  *                        예) { Authorization: `Bearer ${token}` }
  * @param uploadHeaders   (하위호환) 업로드에만 붙일 헤더. authHeaders와 병합됨.
  *
- * @param onUploadedUrl   업로드 성공 후 URL 전달 (상위에서 variant별 PATCH 분기 가능)
- * @param onError         업로드/패치 실패 시 상위로 에러 전달(토스트 등)
- *
  * @param priority        above-the-fold일 때 true로 주면 LCP warning 줄어듦 (next/image)
  * @param alt             이미지 alt
  * @param className       wrapper 클래스 추가
+ *
+ * 추가:
+ * @param teamGroupId     variant='team'일 때 PATCH /groups/{id} 호출에 필요한 그룹 id
+ * @param onError         업로드/패치 실패 시 상위에서 토스트 등 처리할 수 있게 콜백 제공
  *
  * - fetchApi는 JSON 전용(Content-Type 강제)이라 업로드(multipart)는 fetch로 유지
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, CSSProperties } from 'react';
+import type { ChangeEvent, CSSProperties, KeyboardEvent } from 'react';
 import Image from 'next/image';
 import styles from './ProfileImage.module.css';
 
@@ -57,6 +59,8 @@ type SizeSpec = { box: number; image: number };
 type ResponsiveSize = Partial<Record<Breakpoint, ProfileImageSize>>;
 type ResponsiveSpec = Partial<Record<Breakpoint, SizeSpec>>;
 
+type ErrorStage = 'upload' | 'patch-profile' | 'patch-team';
+
 export type ProfileImageProps = {
   src?: string | null;
   variant?: ProfileImageVariant;
@@ -73,17 +77,17 @@ export type ProfileImageProps = {
 
   enableApi?: boolean;
 
+  /** variant='team'에서 그룹 이미지 PATCH에 필요한 groupId */
+  teamGroupId?: number;
+
+  /** 업로드/패치 실패 시 상위에서 처리 (토스트 등) */
+  onError?: (error: unknown, ctx: { stage: ErrorStage }) => void;
+
   /** 업로드 + PATCH 공용 인증 헤더(권장) */
   authHeaders?: HeadersInit;
 
   /** (하위 호환) 업로드 전용 헤더 */
   uploadHeaders?: HeadersInit;
-
-  /** 업로드 성공 시 URL 콜백 */
-  onUploadedUrl?: (url: string) => void;
-
-  /** 에러 콜백 */
-  onError?: (error: unknown) => void;
 
   priority?: boolean;
   alt?: string;
@@ -198,10 +202,10 @@ export default function ProfileImage({
   clickToEdit,
   showBorder,
   enableApi = true,
+  teamGroupId,
+  onError,
   authHeaders,
   uploadHeaders,
-  onUploadedUrl,
-  onError,
   priority = false,
   alt = 'profile image',
   className,
@@ -211,6 +215,7 @@ export default function ProfileImage({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [erroredSrc, setErroredSrc] = useState<string | null>(null);
 
+  // blob url 정리
   useEffect(() => {
     return () => {
       if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
@@ -247,6 +252,17 @@ export default function ProfileImage({
     if (editable && shouldClickToEdit) handleEditClick();
   }, [editable, shouldClickToEdit, handleEditClick]);
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      if (!editable || !shouldClickToEdit) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleEditClick();
+      }
+    },
+    [editable, shouldClickToEdit, handleEditClick],
+  );
+
   const mergedUploadHeaders = useMemo<HeadersInit | undefined>(() => {
     if (!authHeaders && !uploadHeaders) return undefined;
 
@@ -266,6 +282,8 @@ export default function ProfileImage({
 
   const uploadImage = useCallback(
     async (file: File) => {
+      if (!BASE_URL) throw new Error('NEXT_PUBLIC_API_BASE_URL is missing');
+
       const formData = new FormData();
       formData.append('image', file);
 
@@ -286,9 +304,8 @@ export default function ProfileImage({
     [mergedUploadHeaders],
   );
 
-  const patchUserImage = useCallback(
+  const patchProfileImage = useCallback(
     async (url: string) => {
-      // fetchApi는 BASE_URL+TEAM_ID를 이미 붙여줌. path는 /user 로만.
       const res = await fetchApi('/user', {
         method: 'PATCH',
         body: JSON.stringify({ image: url }),
@@ -297,7 +314,23 @@ export default function ProfileImage({
 
       if (!res.ok) {
         const text = await res.text();
-        throw new Error(`patch failed ${res.status}: ${text}`);
+        throw new Error(`patch profile failed ${res.status}: ${text}`);
+      }
+    },
+    [authHeaders],
+  );
+
+  const patchTeamImage = useCallback(
+    async (url: string, groupId: number) => {
+      const res = await fetchApi(`/groups/${groupId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ image: url }),
+        headers: authHeaders,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`patch team failed ${res.status}: ${text}`);
       }
     },
     [authHeaders],
@@ -310,6 +343,9 @@ export default function ProfileImage({
 
       setErroredSrc(null);
 
+      const prevPreview = previewUrl;
+
+      // local preview
       const localUrl = URL.createObjectURL(file);
       setPreviewUrl((prev) => {
         if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
@@ -320,25 +356,48 @@ export default function ProfileImage({
         try {
           const url = await uploadImage(file);
 
-          // 상위에서 team/profile PATCH 분기하고 싶으면 여기서 처리 가능
-          onUploadedUrl?.(url);
+          if (variant === 'team') {
+            if (!teamGroupId) {
+              throw new Error('teamGroupId is required when variant="team" and enableApi=true');
+            }
+            await patchTeamImage(url, teamGroupId);
+          } else {
+            await patchProfileImage(url);
+          }
 
-          // 기존 동작 유지: 기본은 user PATCH
-          await patchUserImage(url);
-
+          // 서버 url로 교체
           setPreviewUrl((prev) => {
             if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
             return url;
           });
         } catch (err) {
+          // 실패 시 사용자가 "바뀐 줄" 착각하지 않게 되돌림
+          setPreviewUrl(prevPreview ?? null);
+
+          const stage: ErrorStage =
+            err instanceof Error && err.message.includes('upload failed')
+              ? 'upload'
+              : variant === 'team'
+                ? 'patch-team'
+                : 'patch-profile';
+
+          onError?.(err, { stage });
           console.error(err);
-          onError?.(err);
         }
       }
 
       e.target.value = '';
     },
-    [enableApi, uploadImage, patchUserImage, onUploadedUrl, onError],
+    [
+      enableApi,
+      uploadImage,
+      patchProfileImage,
+      patchTeamImage,
+      variant,
+      teamGroupId,
+      onError,
+      previewUrl,
+    ],
   );
 
   const styleVars = useMemo(() => {
@@ -381,14 +440,13 @@ export default function ProfileImage({
     <div className={`${styles.frame} ${className ?? ''}`} style={styleVars}>
       <div className={styles.outer}>
         <div className={`${styles.box} ${styles[radius]}`}>
-          <div
-            className={`${styles.mask} ${styles[radius]} ${variant === 'team' ? styles.teamMask : ''}`}
-          >
+          <div className={`${styles.mask} ${styles[radius]}`}>
             <div
               className={`${styles.avatar} ${styles[radius]} ${hasBorder ? styles.avatarBorder : ''} ${
                 editable && shouldClickToEdit ? styles.clickable : ''
               }`}
               onClick={handleAvatarClick}
+              onKeyDown={handleKeyDown}
               role={editable && shouldClickToEdit ? 'button' : undefined}
               tabIndex={editable && shouldClickToEdit ? 0 : -1}
               aria-label={editable && shouldClickToEdit ? 'edit image' : undefined}
@@ -398,7 +456,9 @@ export default function ProfileImage({
                 alt={alt}
                 fill
                 sizes={sizesAttr}
-                className={`${styles.img} ${styles[radius]} ${usingFallback ? styles.contain : styles.cover}`}
+                className={`${styles.img} ${styles[radius]} ${
+                  usingFallback ? styles.contain : styles.cover
+                }`}
                 priority={priority}
                 loading={priority ? 'eager' : 'lazy'}
                 onError={() => {
