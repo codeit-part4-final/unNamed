@@ -8,6 +8,7 @@
   display: inline-block;
 }
 
+/* box: 레이아웃 + edit 버튼 기준점 */
 .box {
   width: var(--pi-box-base);
   height: var(--pi-box-base);
@@ -17,14 +18,16 @@
   justify-content: center;
 
   position: relative;
-
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-
   overflow: visible;
 }
 
+.outer .box {
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+}
+
+/* 라운드/클리핑은 mask에서만 처리 */
 .mask {
   width: 100%;
   height: 100%;
@@ -37,11 +40,7 @@
   border-radius: inherit;
 }
 
-.teamMask {
-  background: var(--color-background-tertiary);
-}
-
-/* avatar */
+/* avatar = 이미지 영역 */
 .avatar {
   width: var(--pi-img-base);
   height: var(--pi-img-base);
@@ -89,7 +88,7 @@
   border-radius: 32px;
 }
 
-/* edit 버튼 */
+/* edit 버튼 (base~767: lg 취급) */
 .editButton {
   position: absolute;
   right: 3px;

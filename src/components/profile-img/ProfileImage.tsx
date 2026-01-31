@@ -3,10 +3,9 @@
 /**
  * ProfileImage Component
  *
- *
  * Props 요약
  * @param src             표시할 이미지 URL (없으면 fallback)
- * @param variant         'profile' | 'team' (마스크 배경색/기본 fallback 분기)
+ * @param variant         'profile' | 'team' (기본 fallback 분기 / (선택) teamMask 배경)
  * @param size            'xl' | 'lg' | 'md' | 'sm' | 'xs' (기본 스펙 프리셋)
  * @param responsiveSize  브레이크포인트별 size 오버라이드 (선택)
  * @param responsiveSpec  브레이크포인트별 box/image px 직접 지정 (선택)
@@ -23,11 +22,13 @@
  *                        예) { Authorization: `Bearer ${token}` }
  * @param uploadHeaders   (하위호환) 업로드에만 붙일 헤더. authHeaders와 병합됨.
  *
+ * @param onUploadedUrl   업로드 성공 후 URL 전달 (상위에서 variant별 PATCH 분기 가능)
+ * @param onError         업로드/패치 실패 시 상위로 에러 전달(토스트 등)
+ *
  * @param priority        above-the-fold일 때 true로 주면 LCP warning 줄어듦 (next/image)
  * @param alt             이미지 alt
  * @param className       wrapper 클래스 추가
  *
-
  * - fetchApi는 JSON 전용(Content-Type 강제)이라 업로드(multipart)는 fetch로 유지
  */
 
@@ -78,10 +79,18 @@ export type ProfileImageProps = {
   /** (하위 호환) 업로드 전용 헤더 */
   uploadHeaders?: HeadersInit;
 
+  /** 업로드 성공 시 URL 콜백 */
+  onUploadedUrl?: (url: string) => void;
+
+  /** 에러 콜백 */
+  onError?: (error: unknown) => void;
+
   priority?: boolean;
   alt?: string;
   className?: string;
 };
+
+const BORDER_WIDTH = 2;
 
 const SIZE_PRESET: Record<ProfileImageSize, SizeSpec> = {
   xl: { box: 112, image: 100 },
@@ -94,8 +103,8 @@ const SIZE_PRESET: Record<ProfileImageSize, SizeSpec> = {
 const BP_ORDER: Breakpoint[] = ['base', 'sm', 'md', 'lg', 'xl'];
 
 const BORDER_BY_SIZE: Record<ProfileImageSize, number> = {
-  xl: 2,
-  lg: 2,
+  xl: BORDER_WIDTH,
+  lg: BORDER_WIDTH,
   md: 0,
   sm: 0,
   xs: 0,
@@ -147,13 +156,13 @@ function resolveResponsiveBorder(
   }
 
   if (showBorder === true) {
-    for (const bp of BP_ORDER) result[bp] = 2;
+    for (const bp of BP_ORDER) result[bp] = BORDER_WIDTH;
     return result as Record<Breakpoint, number>;
   }
 
   for (const bp of BP_ORDER) {
     if (responsiveSpec?.[bp]) {
-      result[bp] = bp === 'lg' || bp === 'xl' ? 2 : 0;
+      result[bp] = bp === 'lg' || bp === 'xl' ? BORDER_WIDTH : 0;
       continue;
     }
     result[bp] = BORDER_BY_SIZE[sizeByBp[bp]];
@@ -191,6 +200,8 @@ export default function ProfileImage({
   enableApi = true,
   authHeaders,
   uploadHeaders,
+  onUploadedUrl,
+  onError,
   priority = false,
   alt = 'profile image',
   className,
@@ -200,7 +211,6 @@ export default function ProfileImage({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [erroredSrc, setErroredSrc] = useState<string | null>(null);
 
-  // blob url 정리
   useEffect(() => {
     return () => {
       if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
@@ -256,15 +266,12 @@ export default function ProfileImage({
 
   const uploadImage = useCallback(
     async (file: File) => {
-      if (!BASE_URL) throw new Error('NEXT_PUBLIC_API_BASE_URL is missing');
-
       const formData = new FormData();
       formData.append('image', file);
 
       const res = await fetch(`${BASE_URL}/${TEAM_ID}/images/upload`, {
         method: 'POST',
         body: formData,
-
         headers: mergedUploadHeaders,
       });
 
@@ -281,6 +288,7 @@ export default function ProfileImage({
 
   const patchUserImage = useCallback(
     async (url: string) => {
+      // fetchApi는 BASE_URL+TEAM_ID를 이미 붙여줌. path는 /user 로만.
       const res = await fetchApi('/user', {
         method: 'PATCH',
         body: JSON.stringify({ image: url }),
@@ -302,7 +310,6 @@ export default function ProfileImage({
 
       setErroredSrc(null);
 
-      // local preview
       const localUrl = URL.createObjectURL(file);
       setPreviewUrl((prev) => {
         if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
@@ -312,21 +319,26 @@ export default function ProfileImage({
       if (enableApi) {
         try {
           const url = await uploadImage(file);
+
+          // 상위에서 team/profile PATCH 분기하고 싶으면 여기서 처리 가능
+          onUploadedUrl?.(url);
+
+          // 기존 동작 유지: 기본은 user PATCH
           await patchUserImage(url);
 
-          // 서버 url로 교체
           setPreviewUrl((prev) => {
             if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
             return url;
           });
         } catch (err) {
           console.error(err);
+          onError?.(err);
         }
       }
 
       e.target.value = '';
     },
-    [enableApi, uploadImage, patchUserImage],
+    [enableApi, uploadImage, patchUserImage, onUploadedUrl, onError],
   );
 
   const styleVars = useMemo(() => {
@@ -370,14 +382,12 @@ export default function ProfileImage({
       <div className={styles.outer}>
         <div className={`${styles.box} ${styles[radius]}`}>
           <div
-            className={`${styles.mask} ${styles[radius]} ${
-              variant === 'team' ? styles.teamMask : styles.profileMask
-            }`}
+            className={`${styles.mask} ${styles[radius]} ${variant === 'team' ? styles.teamMask : ''}`}
           >
             <div
-              className={`${styles.avatar} ${styles[radius]} ${
-                hasBorder ? styles.avatarBorder : ''
-              } ${editable && shouldClickToEdit ? styles.clickable : ''}`}
+              className={`${styles.avatar} ${styles[radius]} ${hasBorder ? styles.avatarBorder : ''} ${
+                editable && shouldClickToEdit ? styles.clickable : ''
+              }`}
               onClick={handleAvatarClick}
               role={editable && shouldClickToEdit ? 'button' : undefined}
               tabIndex={editable && shouldClickToEdit ? 0 : -1}
@@ -388,9 +398,7 @@ export default function ProfileImage({
                 alt={alt}
                 fill
                 sizes={sizesAttr}
-                className={`${styles.img} ${styles[radius]} ${
-                  usingFallback ? styles.contain : styles.cover
-                }`}
+                className={`${styles.img} ${styles[radius]} ${usingFallback ? styles.contain : styles.cover}`}
                 priority={priority}
                 loading={priority ? 'eager' : 'lazy'}
                 onError={() => {
