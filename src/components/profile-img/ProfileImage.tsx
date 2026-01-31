@@ -1,5 +1,36 @@
 'use client';
 
+/**
+ * ProfileImage Component
+ *
+ *
+ * Props 요약
+ * @param src             표시할 이미지 URL (없으면 fallback)
+ * @param variant         'profile' | 'team' (마스크 배경색/기본 fallback 분기)
+ * @param size            'xl' | 'lg' | 'md' | 'sm' | 'xs' (기본 스펙 프리셋)
+ * @param responsiveSize  브레이크포인트별 size 오버라이드 (선택)
+ * @param responsiveSpec  브레이크포인트별 box/image px 직접 지정 (선택)
+ * @param radius          'r8' | 'r12' | 'r20' | 'r32' (컨테이너/마스크/이미지 동일 적용)
+ *
+ * @param editable        true면 input(file) 활성화 + edit 버튼 표시 가능
+ * @param showEditButton  edit 버튼 자체 표시 여부 (default true)
+ * @param clickToEdit     showEditButton=false일 때 avatar 클릭으로 업로드 열기 (선택)
+ *
+ * @param showBorder      보더 표시 제어 (undefined=기본: xl/lg만 2px, true=항상 2px, false=없음)
+ *
+ * @param enableApi       true면 업로드 -> PATCH까지 실행 (default true)
+ * @param authHeaders     토큰 기반 인증 헤더를 상위에서 주입 (upload + patch 둘 다 사용)
+ *                        예) { Authorization: `Bearer ${token}` }
+ * @param uploadHeaders   (하위호환) 업로드에만 붙일 헤더. authHeaders와 병합됨.
+ *
+ * @param priority        above-the-fold일 때 true로 주면 LCP warning 줄어듦 (next/image)
+ * @param alt             이미지 alt
+ * @param className       wrapper 클래스 추가
+ *
+
+ * - fetchApi는 JSON 전용(Content-Type 강제)이라 업로드(multipart)는 fetch로 유지
+ */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, CSSProperties } from 'react';
 import Image from 'next/image';
@@ -14,9 +45,7 @@ import PencilSmall from '@/assets/buttons/edit/editButtonSmall.svg';
 import TeamDefault from '@/assets/icons/img/img.svg';
 
 import { fetchApi } from '@/shared/apis/fetchApi';
-import { TEAM_ID } from '@/shared/apis/config';
-
-const BASE_URL: string = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+import { BASE_URL, TEAM_ID } from '@/shared/apis/config';
 
 export type ProfileImageSize = 'xl' | 'lg' | 'md' | 'sm' | 'xs';
 export type ProfileImageVariant = 'profile' | 'team';
@@ -35,32 +64,21 @@ export type ProfileImageProps = {
   responsiveSpec?: ResponsiveSpec;
   radius?: ProfileImageRadius;
 
-  /** edit on/off */
   editable?: boolean;
-
-  /** edit 버튼 표시 여부 (기본 true) */
   showEditButton?: boolean;
-
-  /** 버튼 숨길 때, 아바타 클릭으로 업로드 열기 */
   clickToEdit?: boolean;
 
-  /**
-   * 보더 제어(오버라이드)
-   * - undefined: 기본(xl/lg만 2px)
-   * - true: 모든 사이즈 2px
-   * - false: 보더 없음
-   */
   showBorder?: boolean;
 
-  /** 업로드 + PATCH까지 실행할지 (기본 true) */
   enableApi?: boolean;
 
-  /** 업로드 요청에 추가로 붙일 헤더 (ex. Authorization) */
+  /** 업로드 + PATCH 공용 인증 헤더(권장) */
+  authHeaders?: HeadersInit;
+
+  /** (하위 호환) 업로드 전용 헤더 */
   uploadHeaders?: HeadersInit;
 
-  /** LCP 경고 방지: above-the-fold에서만 true */
   priority?: boolean;
-
   alt?: string;
   className?: string;
 };
@@ -86,12 +104,8 @@ const BORDER_BY_SIZE: Record<ProfileImageSize, number> = {
 function getDefaultResponsiveSize(
   baseSize: ProfileImageSize,
 ): Record<Breakpoint, ProfileImageSize> {
-  switch (baseSize) {
-    case 'xl':
-      return { base: 'lg', sm: 'lg', md: 'xl', lg: 'xl', xl: 'xl' };
-    default:
-      return { base: baseSize, sm: baseSize, md: baseSize, lg: baseSize, xl: baseSize };
-  }
+  if (baseSize === 'xl') return { base: 'lg', sm: 'lg', md: 'xl', lg: 'xl', xl: 'xl' };
+  return { base: baseSize, sm: baseSize, md: baseSize, lg: baseSize, xl: baseSize };
 }
 
 function resolveResponsiveSpec(
@@ -175,15 +189,18 @@ export default function ProfileImage({
   clickToEdit,
   showBorder,
   enableApi = true,
+  authHeaders,
   uploadHeaders,
   priority = false,
   alt = 'profile image',
   className,
 }: ProfileImageProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [erroredSrc, setErroredSrc] = useState<string | null>(null);
 
+  // blob url 정리
   useEffect(() => {
     return () => {
       if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
@@ -220,11 +237,23 @@ export default function ProfileImage({
     if (editable && shouldClickToEdit) handleEditClick();
   }, [editable, shouldClickToEdit, handleEditClick]);
 
-  /**
-   * 이미지 업로드
-   * @param file 업로드할 이미지 파일
-   * @returns 업로드 후 반환된 이미지 URL
-   */
+  const mergedUploadHeaders = useMemo<HeadersInit | undefined>(() => {
+    if (!authHeaders && !uploadHeaders) return undefined;
+
+    const h = new Headers();
+
+    if (authHeaders) {
+      const a = new Headers(authHeaders);
+      a.forEach((v, k) => h.set(k, v));
+    }
+    if (uploadHeaders) {
+      const u = new Headers(uploadHeaders);
+      u.forEach((v, k) => h.set(k, v));
+    }
+
+    return h;
+  }, [authHeaders, uploadHeaders]);
+
   const uploadImage = useCallback(
     async (file: File) => {
       if (!BASE_URL) throw new Error('NEXT_PUBLIC_API_BASE_URL is missing');
@@ -235,11 +264,8 @@ export default function ProfileImage({
       const res = await fetch(`${BASE_URL}/${TEAM_ID}/images/upload`, {
         method: 'POST',
         body: formData,
-        // ✅ 토큰 기반: Authorization 등은 상위에서 주입
-        // ⚠️ FormData라 Content-Type을 직접 넣으면 안 됨
-        headers: {
-          ...(uploadHeaders ?? {}),
-        },
+
+        headers: mergedUploadHeaders,
       });
 
       if (!res.ok) {
@@ -250,24 +276,24 @@ export default function ProfileImage({
       const data = (await res.json()) as { url: string };
       return data.url;
     },
-    [uploadHeaders],
+    [mergedUploadHeaders],
   );
 
-  /**
-   * 유저 프로필 이미지 PATCH
-   * @param url 업로드된 이미지 URL
-   */
-  const patchUserImage = useCallback(async (url: string) => {
-    const res = await fetchApi(`/${TEAM_ID}/user`, {
-      method: 'PATCH',
-      body: JSON.stringify({ image: url }),
-    });
+  const patchUserImage = useCallback(
+    async (url: string) => {
+      const res = await fetchApi('/user', {
+        method: 'PATCH',
+        body: JSON.stringify({ image: url }),
+        headers: authHeaders,
+      });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`patch failed ${res.status}: ${text}`);
-    }
-  }, []);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`patch failed ${res.status}: ${text}`);
+      }
+    },
+    [authHeaders],
+  );
 
   const handleFileChange = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
@@ -288,7 +314,7 @@ export default function ProfileImage({
           const url = await uploadImage(file);
           await patchUserImage(url);
 
-          // preview를 서버 url로 교체
+          // 서버 url로 교체
           setPreviewUrl((prev) => {
             if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
             return url;
