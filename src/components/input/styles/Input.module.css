@@ -16,3 +16,13 @@
 .input::placeholder {
   color: #64748b;
 }
+
+.error {
+  border-color: #fc4b4b;
+}
+
+.errorMessage {
+  font-size: 12px;
+  color: #fc4b4b;
+  margin-top: 4px;
+}

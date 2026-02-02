@@ -1,8 +1,13 @@
 import { ComponentPropsWithoutRef, ReactNode, Ref } from 'react';
 
-export type InputProps = ComponentPropsWithoutRef<'input'>;
+export type InputProps = ComponentPropsWithoutRef<'input'> & {
+  errorMessage?: string;
+  isError?: boolean;
+};
 
-export type PasswordInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'type'>;
+export type PasswordInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'type'> & {
+  errorMessage?: string;
+};
 
 export type TextAreaProps = ComponentPropsWithoutRef<'textarea'> & {
   ref?: Ref<HTMLTextAreaElement>;
