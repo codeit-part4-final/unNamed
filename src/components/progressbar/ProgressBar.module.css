@@ -12,7 +12,7 @@
       -45deg,
       rgba(0, 0, 0, 0.04) 0px,
       rgba(0, 0, 0, 0.04) 40px,
-      rgba(255, 255, 255, 0.7) 10px,
+      rgba(255, 255, 255, 0.7) 40px,
       rgba(255, 255, 255, 0.7) 80px
     ),
     #eef2f7;
@@ -23,8 +23,7 @@
   border-radius: inherit;
   background: #5189fa;
 
-
-  transition: width var(--pb-duration, 800ms) ease;
+  transition: width 800ms ease;
   will-change: width;
 }
 

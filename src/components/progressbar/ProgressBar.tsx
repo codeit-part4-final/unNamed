@@ -6,17 +6,14 @@ import styles from './ProgressBar.module.css';
 export type ProgressBarProps = {
   /** 0~1 (0.3 = 30%) */
   value?: number;
-
   /** done/total로도 계산 가능 */
   done?: number;
   total?: number;
 
-
+  /** 애니메이션 (default: true) */
   animate?: boolean;
 
-
   replayOnMount?: boolean;
-
 
   durationMs?: number;
 
@@ -57,9 +54,7 @@ export default function ProgressBar({
     const el = fillRef.current;
     if (!el) return;
 
-
-    el.style.setProperty('--pb-duration', animate ? `${durationMs}ms` : '0ms');
-
+    el.style.transition = animate ? `width ${durationMs}ms ease` : 'none';
 
     if (!animate) {
       el.style.width = `${targetPercent}%`;
@@ -69,7 +64,6 @@ export default function ProgressBar({
 
     const isFirstMount = !didMountRef.current;
     didMountRef.current = true;
-
 
     if (replayOnMount && isFirstMount) {
       el.style.width = '0%';
@@ -84,7 +78,6 @@ export default function ProgressBar({
       };
     }
 
-    // 값 변경 시 자연스럽게 이동
     el.style.width = `${targetPercent}%`;
   }, [animate, durationMs, replayOnMount, targetPercent]);
 
@@ -100,7 +93,7 @@ export default function ProgressBar({
       <div
         ref={fillRef}
         className={styles.fill}
-        style={{ width: replayOnMount ? '0%' : `${targetPercent}%` }}
+        style={{ width: animate && replayOnMount ? '0%' : `${targetPercent}%` }}
       />
     </div>
   );
