@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 
 import MobileHeader from './MobileHeader';
-import { ProfileImage } from '@/components/profile-img';
 
 const meta = {
   title: 'Components/MobileHeader',
@@ -30,7 +29,9 @@ export const LoggedOut: Story = {};
 export const LoggedIn: Story = {
   args: {
     isLoggedIn: true,
-    profileImage: <ProfileImage size="md" showBorder />,
+    profileImage: (
+      <div style={{ width: 32, height: 32, borderRadius: 12, background: '#cbd5e1' }} />
+    ),
     onMenuClick: fn(),
     onProfileClick: fn(),
   },

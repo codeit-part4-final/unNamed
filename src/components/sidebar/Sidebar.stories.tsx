@@ -5,7 +5,6 @@ import Sidebar from './Sidebar';
 import SidebarButton from './SidebarButton';
 import SidebarTeamSelect from './SidebarTeamSelect';
 import SidebarAddButton from './SidebarAddButton';
-import { ProfileImage } from '@/components/profile-img';
 import chessSmall from '@/assets/icons/chess/chessSmall.svg';
 import chessBig from '@/assets/icons/chess/chessBig.svg';
 import boardSmall from '@/assets/icons/board/boardSmall.svg';
@@ -27,7 +26,9 @@ type Story = StoryObj<typeof meta>;
 
 export const LoggedIn: Story = {
   args: {
-    profileImage: <ProfileImage size="md" showBorder />,
+    profileImage: (
+      <div style={{ width: 40, height: 40, borderRadius: 12, background: '#cbd5e1' }} />
+    ),
     profileName: '안해나',
     profileTeam: '경영관리팀',
     teamSelect: (isCollapsed: boolean) =>
@@ -87,7 +88,15 @@ export const LoggedOut: Story = {
         <span style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>로그인</span>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <ProfileImage size="md" showBorder />
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: '#e2e8f0',
+              flexShrink: 0,
+            }}
+          />
           <span style={{ fontSize: 14, fontWeight: 600, color: '#0f172a' }}>로그인</span>
         </div>
       ),
