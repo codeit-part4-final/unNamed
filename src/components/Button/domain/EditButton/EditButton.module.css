@@ -21,13 +21,8 @@
     background-color 0.2s ease;
 }
 
-.button:hover {
-  background: var(--color-border-secondary);
-}
-
 .button:active {
   transform: scale(0.95);
-  background: #b0bcc9;
 }
 
 .button:focus-visible {

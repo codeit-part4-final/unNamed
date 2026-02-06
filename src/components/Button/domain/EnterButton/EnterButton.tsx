@@ -32,7 +32,7 @@ export default function EnterButton({ onClick, active = false }: EnterButtonProp
       className={styles.button}
       onClick={onClick}
       disabled={!active} // active가 false면 자동으로 disabled
-      aria-label="댓글 등록"
+      aria-label="전송"
     >
       <img src={iconSrc.src} alt="" className={styles.icon} />
     </button>

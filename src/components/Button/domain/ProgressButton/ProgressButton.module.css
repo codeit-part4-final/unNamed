@@ -25,10 +25,6 @@
     transform 0.15s ease;
 }
 
-.button:hover:not(:disabled) {
-  background: #cbd5e1;
-}
-
 .button:active:not(:disabled) {
   transform: scale(0.98);
 }
