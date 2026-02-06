@@ -1,0 +1,173 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--color-background-inverse);
+  border: 1px solid var(--color-background-tertiary);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.card:hover {
+  background-color: var(--color-brand-secondary);
+}
+
+.selected {
+  border-color: var(--color-icon-brand);
+}
+
+.completed {
+  background-color: var(--color-background-secondary);
+}
+
+.completed:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.titleGroup {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.title {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleInput {
+  width: 100%;
+  min-width: 0;
+  font-family: var(--font-pretendard), 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+}
+
+.titleInput::placeholder {
+  color: var(--color-text-default);
+}
+
+.titleCompleted {
+  color: var(--color-text-disabled);
+  text-decoration: line-through;
+}
+
+.commentCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-disabled);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-disabled);
+}
+
+.metaIcon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.separator {
+  margin: 0 8px;
+  color: var(--color-background-tertiary);
+}
+
+.frequencyButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.frequencyButton:hover {
+  text-decoration: underline;
+}
+
+.kebab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.kebab:hover {
+  background-color: var(--color-background-tertiary);
+}
+
+@media (max-width: 767px) {
+  .card {
+    padding: 10px;
+  }
+
+  .topRow {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 375px) {
+  .card {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .topRow {
+    gap: 4px;
+  }
+
+  .title,
+  .titleInput {
+    font-size: 13px;
+  }
+
+  .commentCount {
+    font-size: 11px;
+  }
+
+  .metaRow {
+    font-size: 11px;
+  }
+}

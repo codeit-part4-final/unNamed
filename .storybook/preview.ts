@@ -1,4 +1,3 @@
-import '../src/shared/styles/color.css';
 import '../src/app/globals.css';
 import './preview.css';
 
