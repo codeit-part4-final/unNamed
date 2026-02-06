@@ -6,6 +6,7 @@ interface BaseModalProps {
   children?: ReactNode;
   ariaDescribedby?: string;
   className?: string;
+  contentClassName?: string;
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
 }
