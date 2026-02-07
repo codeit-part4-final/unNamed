@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 
-import Modal from '../Modal';
+import Modal from '../../../Modal';
 import BaseButton from '@/components/Button/base/BaseButton';
 import styles from './WarningModal.module.css';
 import alertSmall from '@/assets/icons/alert/alertSmall.svg';
-import type { BaseDomainModalProps } from './types';
+import type { BaseDomainModalProps } from '../../types/types';
 
 const TITLE_ID = 'warning-modal-title';
 const DESCRIPTION_ID = 'warning-modal-description';
@@ -15,25 +15,39 @@ const DEFAULT_DESCRIPTION = '그룹장으로 있는 그룹은 자동으로 삭�
 const DEFAULT_CLOSE_LABEL = '닫기';
 const DEFAULT_CONFIRM_LABEL = '회원 탈퇴';
 
-export interface WarningModalProps extends BaseDomainModalProps {
-  onConfirm: () => void;
+interface WarningModalTextOptions {
   title?: string;
   description?: string;
   closeLabel?: string;
   confirmLabel?: string;
 }
 
+export interface WarningModalProps extends BaseDomainModalProps {
+  onConfirm: () => void;
+  text?: WarningModalTextOptions;
+}
+
+/**
+ * @param props.isOpen 모달 표시 여부를 boolean으로 전달합니다.
+ * @param props.onClose 모달을 닫을 때 실행할 함수를 전달합니다.
+ * @param props.onConfirm 회원 탈퇴 확인 버튼 클릭 시 실행할 함수를 전달합니다.
+ * @param props.text 경고 모달 제목과 설명과 버튼 문구를 객체로 전달합니다.
+ * @param props.closeOptions 오버레이 클릭과 Escape 닫힘 옵션을 객체로 전달합니다.
+ */
 export default function WarningModal({
   isOpen,
   onClose,
   onConfirm,
-  title = DEFAULT_TITLE,
-  description = DEFAULT_DESCRIPTION,
-  closeLabel = DEFAULT_CLOSE_LABEL,
-  confirmLabel = DEFAULT_CONFIRM_LABEL,
-  closeOnOverlayClick = true,
-  closeOnEscape = true,
+  text,
+  closeOptions,
 }: WarningModalProps) {
+  const title = text?.title ?? DEFAULT_TITLE;
+  const description = text?.description ?? DEFAULT_DESCRIPTION;
+  const closeLabel = text?.closeLabel ?? DEFAULT_CLOSE_LABEL;
+  const confirmLabel = text?.confirmLabel ?? DEFAULT_CONFIRM_LABEL;
+  const closeOnOverlayClick = closeOptions?.overlayClick ?? true;
+  const closeOnEscape = closeOptions?.escape ?? true;
+
   return (
     <Modal
       isOpen={isOpen}

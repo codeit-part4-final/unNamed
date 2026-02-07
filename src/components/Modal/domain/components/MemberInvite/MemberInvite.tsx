@@ -1,11 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import Modal from '../Modal';
+import Modal from '../../../Modal';
 import styles from './MemberInvite.module.css';
 import BaseButton from '@/components/Button/base/BaseButton';
 import xMarkBig from '@/assets/icons/xMark/xMarkBig.svg';
-import type { BaseDomainModalProps } from './types';
+import type { BaseDomainModalProps } from '../../types/types';
 
 const TITLE_ID = 'member-invite-title';
 const DESCRIPTION_ID = 'member-invite-description';
@@ -14,26 +14,43 @@ const DEFAULT_TITLE = '멤버 초대';
 const DEFAULT_DESCRIPTION = '그룹에 참여할 수 있는 링크를 복사합니다.';
 const DEFAULT_COPY_LABEL = '링크 복사하기';
 
-export interface MemberInviteProps extends BaseDomainModalProps {
-  inviteLink: string;
-  onCopyLink?: (link: string) => void;
+interface MemberInviteTextOptions {
   title?: string;
   description?: string;
   copyButtonLabel?: string;
 }
 
+interface MemberInviteInviteOptions {
+  link: string;
+  onCopyLink?: (link: string) => void;
+}
+
+export interface MemberInviteProps extends BaseDomainModalProps {
+  invite: MemberInviteInviteOptions;
+  text?: MemberInviteTextOptions;
+}
+
+/**
+ * @param props.isOpen 모달 표시 여부를 boolean으로 전달합니다.
+ * @param props.onClose 모달을 닫을 때 실행할 함수를 전달합니다.
+ * @param props.invite 초대 링크와 복사 핸들러를 객체로 전달합니다.
+ * @param props.text 모달 제목과 설명과 버튼 문구를 객체로 전달합니다.
+ * @param props.closeOptions 오버레이 클릭과 Escape 닫힘 옵션을 객체로 전달합니다.
+ */
 export default function MemberInvite({
   isOpen,
   onClose,
-  inviteLink,
-  onCopyLink,
-  title = DEFAULT_TITLE,
-  description = DEFAULT_DESCRIPTION,
-  copyButtonLabel = DEFAULT_COPY_LABEL,
-  closeOnOverlayClick = true,
-  closeOnEscape = true,
+  invite,
+  text,
+  closeOptions,
 }: MemberInviteProps) {
-  const handleCopy = () => onCopyLink?.(inviteLink);
+  const title = text?.title ?? DEFAULT_TITLE;
+  const description = text?.description ?? DEFAULT_DESCRIPTION;
+  const copyButtonLabel = text?.copyButtonLabel ?? DEFAULT_COPY_LABEL;
+  const closeOnOverlayClick = closeOptions?.overlayClick ?? true;
+  const closeOnEscape = closeOptions?.escape ?? true;
+
+  const handleCopy = () => invite.onCopyLink?.(invite.link);
 
   return (
     <Modal

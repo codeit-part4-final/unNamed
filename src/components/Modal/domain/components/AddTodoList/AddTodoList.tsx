@@ -5,10 +5,10 @@ import type { FormEvent } from 'react';
 import BaseButton from '@/components/Button/base/BaseButton';
 import { Input } from '@/components/input';
 import type { InputProps } from '@/components/input/types/types';
-import Modal from '../Modal';
+import Modal from '../../../Modal';
 import styles from './AddTodoList.module.css';
 import xMarkBig from '@/assets/icons/xMark/xMarkBig.svg';
-import type { BaseDomainModalProps } from './types';
+import type { BaseDomainModalProps } from '../../types/types';
 
 const TITLE_ID = 'add-todo-list-title';
 const CLOSE_BUTTON_ARIA_LABEL = '닫기';
@@ -18,25 +18,44 @@ const DEFAULT_SUBMIT_LABEL = '만들기';
 
 type TodoInputProps = Omit<InputProps, 'className' | 'type' | 'name' | 'placeholder'>;
 
-export interface AddTodoListProps extends BaseDomainModalProps {
-  onSubmit: () => void;
+interface AddTodoListTextOptions {
   title?: string;
   submitLabel?: string;
   inputPlaceholder?: string;
-  inputProps?: TodoInputProps;
 }
 
+interface AddTodoListInputOptions {
+  props?: TodoInputProps;
+}
+
+export interface AddTodoListProps extends BaseDomainModalProps {
+  onSubmit: () => void;
+  text?: AddTodoListTextOptions;
+  input?: AddTodoListInputOptions;
+}
+
+/**
+ * @param props.isOpen 모달 표시 여부를 boolean으로 전달합니다.
+ * @param props.onClose 모달을 닫을 때 실행할 함수를 전달합니다.
+ * @param props.onSubmit 할 일 생성 버튼 클릭 시 실행할 함수를 전달합니다.
+ * @param props.text 모달 제목과 버튼 문구 같은 텍스트 옵션을 객체로 전달합니다.
+ * @param props.input 할 일 입력창에 적용할 옵션을 객체로 전달합니다.
+ * @param props.closeOptions 오버레이 클릭과 Escape 닫힘 옵션을 객체로 전달합니다.
+ */
 export default function AddTodoList({
   isOpen,
   onClose,
   onSubmit,
-  title = DEFAULT_TITLE,
-  submitLabel = DEFAULT_SUBMIT_LABEL,
-  inputPlaceholder = DEFAULT_PLACEHOLDER,
-  inputProps,
-  closeOnOverlayClick = true,
-  closeOnEscape = true,
+  text,
+  input,
+  closeOptions,
 }: AddTodoListProps) {
+  const title = text?.title ?? DEFAULT_TITLE;
+  const submitLabel = text?.submitLabel ?? DEFAULT_SUBMIT_LABEL;
+  const inputPlaceholder = text?.inputPlaceholder ?? DEFAULT_PLACEHOLDER;
+  const closeOnOverlayClick = closeOptions?.overlayClick ?? true;
+  const closeOnEscape = closeOptions?.escape ?? true;
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit();
@@ -70,7 +89,7 @@ export default function AddTodoList({
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <Input
-            {...inputProps}
+            {...input?.props}
             className={styles.input}
             type="text"
             name="todo"

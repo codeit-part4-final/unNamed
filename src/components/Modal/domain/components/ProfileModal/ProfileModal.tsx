@@ -3,12 +3,12 @@
 import type { ImageProps } from 'next/image';
 import Image from 'next/image';
 
-import Modal from '../Modal';
+import Modal from '../../../Modal';
 import styles from './ProfileModal.module.css';
 import BaseButton from '@/components/Button/base/BaseButton';
 import profileFallback from '@/assets/icons/img/img.svg';
 import xMarkBig from '@/assets/icons/xMark/xMarkBig.svg';
-import type { BaseDomainModalProps } from './types';
+import type { BaseDomainModalProps } from '../../types/types';
 
 const TITLE_ID = 'profile-modal-title';
 const EMAIL_ID = 'profile-modal-email';
@@ -16,27 +16,38 @@ const CLOSE_BUTTON_ARIA_LABEL = '닫기';
 const DEFAULT_COPY_LABEL = '이메일 복사하기';
 const DEFAULT_PROFILE_ALT = '프로필 이미지';
 
-export interface ProfileModalProps extends BaseDomainModalProps {
-  onCopyEmail: () => void;
+interface ProfileModalProfileOptions {
   title: string;
   email: string;
-  profileImageSrc?: ImageProps['src'];
-  profileImageAlt?: string;
+  imageSrc?: ImageProps['src'];
+  imageAlt?: string;
   copyButtonLabel?: string;
 }
 
+export interface ProfileModalProps extends BaseDomainModalProps {
+  onCopyEmail: () => void;
+  profile: ProfileModalProfileOptions;
+}
+
+/**
+ * @param props.isOpen 모달 표시 여부를 boolean으로 전달합니다.
+ * @param props.onClose 모달을 닫을 때 실행할 함수를 전달합니다.
+ * @param props.onCopyEmail 이메일 복사 버튼 클릭 시 실행할 함수를 전달합니다.
+ * @param props.profile 프로필 정보와 표시 텍스트를 객체로 전달합니다.
+ * @param props.closeOptions 오버레이 클릭과 Escape 닫힘 옵션을 객체로 전달합니다.
+ */
 export default function ProfileModal({
   isOpen,
   onClose,
   onCopyEmail,
-  title,
-  email,
-  profileImageSrc,
-  profileImageAlt = DEFAULT_PROFILE_ALT,
-  copyButtonLabel = DEFAULT_COPY_LABEL,
-  closeOnOverlayClick = true,
-  closeOnEscape = true,
+  profile,
+  closeOptions,
 }: ProfileModalProps) {
+  const profileImageAlt = profile.imageAlt ?? DEFAULT_PROFILE_ALT;
+  const copyButtonLabel = profile.copyButtonLabel ?? DEFAULT_COPY_LABEL;
+  const closeOnOverlayClick = closeOptions?.overlayClick ?? true;
+  const closeOnEscape = closeOptions?.escape ?? true;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -60,7 +71,7 @@ export default function ProfileModal({
         <div className={styles.content}>
           <div className={styles.profileImage}>
             <Image
-              src={profileImageSrc ?? profileFallback}
+              src={profile.imageSrc ?? profileFallback}
               alt={profileImageAlt}
               width={40}
               height={40}
@@ -68,10 +79,10 @@ export default function ProfileModal({
           </div>
 
           <h2 id={TITLE_ID} className={styles.title}>
-            {title}
+            {profile.title}
           </h2>
           <p id={EMAIL_ID} className={styles.email}>
-            {email}
+            {profile.email}
           </p>
 
           <BaseButton

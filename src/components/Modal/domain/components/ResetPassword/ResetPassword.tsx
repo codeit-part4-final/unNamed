@@ -2,12 +2,12 @@
 
 import type { FormEvent } from 'react';
 
-import Modal from '../Modal';
+import Modal from '../../../Modal';
 import BaseButton from '@/components/Button/base/BaseButton';
 import { Input } from '@/components/input';
 import type { InputProps } from '@/components/input/types/types';
 import styles from './ResetPassword.module.css';
-import type { BaseDomainModalProps } from './types';
+import type { BaseDomainModalProps } from '../../types/types';
 
 const TITLE_ID = 'reset-password-title';
 const DESCRIPTION_ID = 'reset-password-description';
@@ -22,37 +22,48 @@ type EmailInputFieldProps = Omit<
   'className' | 'type' | 'name' | 'autoComplete' | 'placeholder'
 >;
 
-export interface ResetPasswordProps extends BaseDomainModalProps {
-  onSubmit: () => void;
+interface ResetPasswordTextOptions {
   title?: string;
   description?: string;
   closeLabel?: string;
   submitLabel?: string;
   emailPlaceholder?: string;
-  emailInputProps?: EmailInputFieldProps;
+}
+
+interface ResetPasswordInputOptions {
+  email?: EmailInputFieldProps;
+}
+
+export interface ResetPasswordProps extends BaseDomainModalProps {
+  onSubmit: () => void;
+  text?: ResetPasswordTextOptions;
+  input?: ResetPasswordInputOptions;
 }
 
 /**
- * 비밀번호 재설정 링크를 보내기 위한 모달 UI 컴포넌트.
- *
- * @param props.isOpen 모달을 열지 여부
- * @param props.onClose 모달을 닫을 때 호출 (오버레이 클릭/Escape 포함)
- * @param props.onSubmit "링크 보내기" 제출 시 호출되는 콜백
- * @param props.emailInputProps 이메일 Input에 그대로 전달할 props (예: `value`, `onChange`, `isError`, `errorMessage`)
+ * @param props.isOpen 모달 표시 여부를 boolean으로 전달합니다.
+ * @param props.onClose 모달을 닫을 때 실행할 함수를 전달합니다.
+ * @param props.onSubmit 링크 보내기 제출 시 실행할 함수를 전달합니다.
+ * @param props.text 제목과 버튼 문구와 안내 문구 같은 텍스트 옵션을 객체로 전달합니다.
+ * @param props.input 이메일 입력창에 적용할 옵션을 객체로 전달합니다.
+ * @param props.closeOptions 오버레이 클릭과 Escape 닫힘 옵션을 객체로 전달합니다.
  */
 export default function ResetPassword({
   isOpen,
   onClose,
   onSubmit,
-  title = DEFAULT_TITLE,
-  description = DEFAULT_DESCRIPTION,
-  closeLabel = DEFAULT_CLOSE_LABEL,
-  submitLabel = DEFAULT_SUBMIT_LABEL,
-  emailPlaceholder = DEFAULT_EMAIL_PLACEHOLDER,
-  emailInputProps,
-  closeOnOverlayClick = true,
-  closeOnEscape = true,
+  text,
+  input,
+  closeOptions,
 }: ResetPasswordProps) {
+  const title = text?.title ?? DEFAULT_TITLE;
+  const description = text?.description ?? DEFAULT_DESCRIPTION;
+  const closeLabel = text?.closeLabel ?? DEFAULT_CLOSE_LABEL;
+  const submitLabel = text?.submitLabel ?? DEFAULT_SUBMIT_LABEL;
+  const emailPlaceholder = text?.emailPlaceholder ?? DEFAULT_EMAIL_PLACEHOLDER;
+  const closeOnOverlayClick = closeOptions?.overlayClick ?? true;
+  const closeOnEscape = closeOptions?.escape ?? true;
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit();
@@ -80,7 +91,7 @@ export default function ResetPassword({
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <Input
-            {...emailInputProps}
+            {...input?.email}
             className={styles.input}
             type="email"
             name="email"
