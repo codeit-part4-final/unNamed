@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import type { FormEvent } from 'react';
+import BaseButton from '@/components/Button/base/BaseButton';
 import { Input } from '@/components/input';
 import type { InputProps } from '@/components/input/types/types';
 import Modal from '../Modal';
@@ -52,14 +53,14 @@ export default function AddTodoList({
     >
       <article className={styles.container}>
         <div className={styles.buttonContainer}>
-          <button
+          <BaseButton
             type="button"
             className={styles.closeButton}
             aria-label={CLOSE_BUTTON_ARIA_LABEL}
             onClick={onClose}
           >
             <Image src={xMarkBig} alt="" width={24} height={24} />
-          </button>
+          </BaseButton>
         </div>
         <header className={styles.header}>
           <h2 id={TITLE_ID} className={styles.title}>
@@ -76,9 +77,9 @@ export default function AddTodoList({
             placeholder={inputPlaceholder}
           />
           <footer className={styles.footer}>
-            <button type="submit" className={styles.button}>
+            <BaseButton type="submit" variant="primary" className={styles.button}>
               {submitLabel}
-            </button>
+            </BaseButton>
           </footer>
         </form>
       </article>

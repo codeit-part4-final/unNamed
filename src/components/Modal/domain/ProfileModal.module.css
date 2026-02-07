@@ -47,6 +47,14 @@
   cursor: pointer;
 }
 
+.closeButton.closeButton,
+.closeButton.closeButton:hover:not(:disabled),
+.closeButton.closeButton:active:not(:disabled) {
+  border: none;
+  background: transparent;
+  color: inherit;
+}
+
 .profileImage {
   display: flex;
   width: 40px;

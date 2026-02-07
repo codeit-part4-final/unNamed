@@ -5,6 +5,7 @@ import Image from 'next/image';
 
 import Modal from '../Modal';
 import styles from './ProfileModal.module.css';
+import BaseButton from '@/components/Button/base/BaseButton';
 import profileFallback from '@/assets/icons/img/img.svg';
 import xMarkBig from '@/assets/icons/xMark/xMarkBig.svg';
 import type { BaseDomainModalProps } from './types';
@@ -47,14 +48,14 @@ export default function ProfileModal({
       closeOnEscape={closeOnEscape}
     >
       <article className={styles.container}>
-        <button
+        <BaseButton
           type="button"
           className={styles.closeButton}
           onClick={onClose}
           aria-label={CLOSE_BUTTON_ARIA_LABEL}
         >
           <Image src={xMarkBig} alt="" width={24} height={24} aria-hidden />
-        </button>
+        </BaseButton>
 
         <div className={styles.content}>
           <div className={styles.profileImage}>
@@ -73,9 +74,14 @@ export default function ProfileModal({
             {email}
           </p>
 
-          <button type="button" className={styles.copyButton} onClick={onCopyEmail}>
+          <BaseButton
+            type="button"
+            variant="primary"
+            className={styles.copyButton}
+            onClick={onCopyEmail}
+          >
             {copyButtonLabel}
-          </button>
+          </BaseButton>
         </div>
       </article>
     </Modal>

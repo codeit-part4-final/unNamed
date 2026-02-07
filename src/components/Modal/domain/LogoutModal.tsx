@@ -1,6 +1,7 @@
 'use client';
 
 import Modal from '../Modal';
+import BaseButton from '@/components/Button/base/BaseButton';
 import styles from './LogoutModal.module.css';
 import type { BaseDomainModalProps } from './types';
 
@@ -41,12 +42,22 @@ export default function LogoutModal({
         </h2>
 
         <footer className={styles.actions}>
-          <button type="button" className={styles.closeButton} onClick={onClose}>
+          <BaseButton
+            type="button"
+            variant="outline"
+            className={styles.closeButton}
+            onClick={onClose}
+          >
             {closeLabel}
-          </button>
-          <button type="button" className={styles.confirmButton} onClick={onConfirm}>
+          </BaseButton>
+          <BaseButton
+            type="button"
+            variant="danger"
+            className={styles.confirmButton}
+            onClick={onConfirm}
+          >
             {confirmLabel}
-          </button>
+          </BaseButton>
         </footer>
       </article>
     </Modal>

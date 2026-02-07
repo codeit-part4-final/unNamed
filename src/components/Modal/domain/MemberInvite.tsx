@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Modal from '../Modal';
 import styles from './MemberInvite.module.css';
+import BaseButton from '@/components/Button/base/BaseButton';
 import xMarkBig from '@/assets/icons/xMark/xMarkBig.svg';
 import type { BaseDomainModalProps } from './types';
 
@@ -45,23 +46,28 @@ export default function MemberInvite({
       closeOnEscape={closeOnEscape}
     >
       <article className={styles.container}>
-        <button
+        <BaseButton
           type="button"
           className={styles.closeButton}
           onClick={onClose}
           aria-label={CLOSE_BUTTON_ARIA_LABEL}
         >
           <Image src={xMarkBig} alt="" width={24} height={24} aria-hidden />
-        </button>
+        </BaseButton>
         <h2 id={TITLE_ID} className={styles.title}>
           {title}
         </h2>
         <p id={DESCRIPTION_ID} className={styles.description}>
           {description}
         </p>
-        <button type="button" className={styles.copyButton} onClick={handleCopy}>
+        <BaseButton
+          type="button"
+          variant="primary"
+          className={styles.copyButton}
+          onClick={handleCopy}
+        >
           {copyButtonLabel}
-        </button>
+        </BaseButton>
       </article>
     </Modal>
   );

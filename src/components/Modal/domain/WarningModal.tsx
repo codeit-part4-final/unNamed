@@ -3,6 +3,7 @@
 import Image from 'next/image';
 
 import Modal from '../Modal';
+import BaseButton from '@/components/Button/base/BaseButton';
 import styles from './WarningModal.module.css';
 import alertSmall from '@/assets/icons/alert/alertSmall.svg';
 import type { BaseDomainModalProps } from './types';
@@ -63,12 +64,22 @@ export default function WarningModal({
         </p>
 
         <footer className={styles.actions}>
-          <button type="button" className={styles.closeButton} onClick={onClose}>
+          <BaseButton
+            type="button"
+            variant="outline"
+            className={styles.closeButton}
+            onClick={onClose}
+          >
             {closeLabel}
-          </button>
-          <button type="button" className={styles.confirmButton} onClick={onConfirm}>
+          </BaseButton>
+          <BaseButton
+            type="button"
+            variant="danger"
+            className={styles.confirmButton}
+            onClick={onConfirm}
+          >
             {confirmLabel}
-          </button>
+          </BaseButton>
         </footer>
       </article>
     </Modal>

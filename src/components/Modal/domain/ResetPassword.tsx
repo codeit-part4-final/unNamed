@@ -3,6 +3,7 @@
 import type { FormEvent } from 'react';
 
 import Modal from '../Modal';
+import BaseButton from '@/components/Button/base/BaseButton';
 import { Input } from '@/components/input';
 import type { InputProps } from '@/components/input/types/types';
 import styles from './ResetPassword.module.css';
@@ -88,12 +89,17 @@ export default function ResetPassword({
           />
 
           <footer className={styles.actions}>
-            <button type="button" className={styles.closeButton} onClick={onClose}>
+            <BaseButton
+              type="button"
+              variant="outline"
+              className={styles.closeButton}
+              onClick={onClose}
+            >
               {closeLabel}
-            </button>
-            <button type="submit" className={styles.sendButton}>
+            </BaseButton>
+            <BaseButton type="submit" variant="primary" className={styles.sendButton}>
               {submitLabel}
-            </button>
+            </BaseButton>
           </footer>
         </form>
       </article>

@@ -31,6 +31,14 @@
   cursor: pointer;
 }
 
+.closeButton.closeButton,
+.closeButton.closeButton:hover:not(:disabled),
+.closeButton.closeButton:active:not(:disabled) {
+  border: none;
+  background: transparent;
+  color: inherit;
+}
+
 .title {
   margin: 8px 0 0;
   color: var(--Text-Primary, #1e293b);

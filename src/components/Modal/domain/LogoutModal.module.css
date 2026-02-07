@@ -61,6 +61,14 @@
   cursor: pointer;
 }
 
+.closeButton.closeButton,
+.closeButton.closeButton:hover:not(:disabled),
+.closeButton.closeButton:active:not(:disabled) {
+  border: 1px solid var(--Border-Secondary, #cbd5e1);
+  background: var(--Background-Primary, #fff);
+  color: var(--Text-Default, #64748b);
+}
+
 .confirmButton {
   display: flex;
   width: 136px;
