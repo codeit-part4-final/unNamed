@@ -1,0 +1,98 @@
+@import '@shared/styles/color.css';
+
+.container {
+  position: relative;
+  width: 384px;
+  height: 211px;
+  padding: 40px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+section > .modalContent {
+  border-radius: 24px;
+}
+
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.container .closeButton,
+.container .closeButton:hover:not(:disabled),
+.container .closeButton:active:not(:disabled) {
+  border: none;
+  background: transparent;
+  color: inherit;
+}
+
+.title {
+  margin: 8px 0 0;
+  color: var(--Text-Primary, #1e293b);
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 19px;
+}
+
+.description {
+  margin: 4px 0 16px;
+  color: var(--Text-Secondary, #334155);
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+}
+
+.copyButton {
+  display: flex;
+  width: 280px;
+  height: 48px;
+  padding: 14px 24px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 16px;
+  border: none;
+  background: var(--color-brand-primary);
+  color: var(--Text-inverse, #fff);
+  font-family: Pretendard, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 19px;
+  cursor: pointer;
+}
+
+.copyButton:disabled {
+  background: var(--color-interaction-inactive);
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  section > .modalContent {
+    border-radius: 24px 24px 0 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 375px;
+    height: 195px;
+    flex-shrink: 0;
+    border-radius: 24px 24px 0 0;
+    background: var(--Background-Primary, #fff);
+    box-sizing: border-box;
+  }
+}
