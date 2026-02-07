@@ -34,6 +34,14 @@
   gap: 8px;
 }
 
+.checkboxLarge {
+  display: block;
+}
+
+.checkboxSmall {
+  display: none;
+}
+
 .titleGroup {
   flex: 1;
   min-width: 0;
@@ -96,6 +104,8 @@
 .metaIcon {
   flex-shrink: 0;
   display: block;
+  width: 12px;
+  height: 12px;
 }
 
 .separator {
@@ -158,6 +168,14 @@
     gap: 4px;
   }
 
+  .checkboxLarge {
+    display: none;
+  }
+
+  .checkboxSmall {
+    display: block;
+  }
+
   .title,
   .titleInput {
     font-size: 13px;
@@ -169,5 +187,10 @@
 
   .metaRow {
     font-size: 11px;
+  }
+
+  .metaIcon {
+    width: 10px;
+    height: 10px;
   }
 }

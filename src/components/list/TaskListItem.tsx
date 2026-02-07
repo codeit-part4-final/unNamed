@@ -2,15 +2,13 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useEffect, useState, type KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 
 import CheckBox from '@/components/checkbox/CheckBox';
 
 import styles from './styles/TaskListItem.module.css';
 import { TASK_LIST_ITEM_ICONS } from './constants/taskListItemConstants';
 import type { TaskListItemProps } from './types/types';
-
-const MOBILE_BREAKPOINT = 375;
 
 /**
  * 할일 목록 아이템 카드 컴포넌트.
@@ -33,25 +31,12 @@ export default function TaskListItem({
   onFrequencyClick,
   className,
 }: TaskListItemProps) {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
-    const handleChange = () => setIsMobile(mql.matches);
-
-    handleChange();
-    mql.addEventListener('change', handleChange);
-    return () => mql.removeEventListener('change', handleChange);
-  }, []);
-
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       onTitleSubmit?.();
     }
   };
-
-  const iconSize = isMobile ? 10 : 12;
 
   return (
     <div
@@ -63,12 +48,22 @@ export default function TaskListItem({
       )}
     >
       <div className={styles.topRow}>
-        <CheckBox
-          checked={checked}
-          size={isMobile ? 'small' : 'large'}
-          onCheckedChange={onCheckedChange}
-          options={{ ariaLabel: `${title} 완료 체크` }}
-        />
+        <div className={styles.checkboxLarge}>
+          <CheckBox
+            checked={checked}
+            size="large"
+            onCheckedChange={onCheckedChange}
+            options={{ ariaLabel: `${title} 완료 체크` }}
+          />
+        </div>
+        <div className={styles.checkboxSmall}>
+          <CheckBox
+            checked={checked}
+            size="small"
+            onCheckedChange={onCheckedChange}
+            options={{ ariaLabel: `${title} 완료 체크` }}
+          />
+        </div>
         <div className={styles.titleGroup}>
           {isEditing ? (
             <input
@@ -106,8 +101,8 @@ export default function TaskListItem({
           className={styles.metaIcon}
           src={TASK_LIST_ITEM_ICONS.calender}
           alt=""
-          width={iconSize}
-          height={iconSize}
+          width={12}
+          height={12}
         />
         <span>{date}</span>
         {frequency && (
@@ -123,8 +118,8 @@ export default function TaskListItem({
                 className={styles.metaIcon}
                 src={TASK_LIST_ITEM_ICONS.repeat}
                 alt=""
-                width={iconSize}
-                height={iconSize}
+                width={12}
+                height={12}
               />
               <span>{frequency}</span>
             </button>
