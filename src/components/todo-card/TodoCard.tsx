@@ -46,7 +46,11 @@ export default function TodoCard({
                 checked={item.checked}
                 size="small"
                 label={<span className={styles.itemLabel}>{item.text}</span>}
-                onCheckedChange={(checked) => onItemCheckedChange?.(item.id, checked)}
+                onCheckedChange={
+                  onItemCheckedChange
+                    ? (checked) => onItemCheckedChange(item.id, checked)
+                    : undefined
+                }
               />
             </div>
           ))}
