@@ -70,6 +70,15 @@
   font-size: 14px;
   line-height: 1.5;
   text-align: center;
+  font-weight: 600;
+}
+
+.successText {
+  margin: 0;
+  color: var(--color-brand-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 @media (max-width: 767px) {
@@ -167,7 +176,8 @@
   }
 
   .helperText,
-  .errorText {
+  .errorText,
+  .successText {
     margin-top: 16px;
   }
 }
